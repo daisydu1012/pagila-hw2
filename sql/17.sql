@@ -8,3 +8,32 @@
  * You might find the following stackoverflow answer useful for figuring out the syntax:
  * <https://stackoverflow.com/a/5700744>.
  */
+
+
+
+
+
+
+
+
+
+
+
+WITH revenue_per_film AS (
+  SELECT
+    f.film_id,
+    f.title,
+    ROUND(COALESCE(SUM(p.amount), 0), 2) AS revenue
+  FROM film f
+  LEFT JOIN inventory i ON i.film_id = f.film_id
+  LEFT JOIN rental r ON r.inventory_id = i.inventory_id
+  LEFT JOIN payment p ON p.rental_id = r.rental_id
+  GROUP BY f.film_id, f.title
+)
+SELECT
+  RANK() OVER (ORDER BY revenue DESC) AS rank,
+  title,
+  revenue,
+  ROUND(SUM(revenue) OVER (ORDER BY revenue DESC), 2) AS "total revenue"
+FROM revenue_per_film
+ORDER BY revenue DESC, title ASC;
